@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 lowerBound=np.array([0,0,0])
 upperBound=np.array([180,255,100])
@@ -26,6 +27,9 @@ while True:
     if(conts):
         x,y,w,h=cv2.boundingRect(conts[0])
         cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255), 2)
+        # Do control scheme wrt xywh
+        
+
         if x < 130:
             print "turn right"
         elif x > 170:
