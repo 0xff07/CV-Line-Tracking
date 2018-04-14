@@ -44,10 +44,15 @@ while True:
             CM_h[i] = h
             cv2.rectangle(sliced_img[i],(x,y),(x+w,y+h),(0,0,255), 2)
     # Do control with segs
+
+    for i in range(0, SLICE_NUM - 1):
+        cv2.line(img, (CM_x[i], CM_y[i]), (CM_x[i+1], CM_y[i+1]), (0, 255, 0), 10)
+    #cv2.imshow("cam",img)
+    cv2.waitKey(10)
     vec_t_x = CM_x[0] - CM_x[1]
     vec_t_y = CM_y[0] - CM_y[1]
+    pos = [CM_x[0]/2 + CM_x[1]/2 - IMG_WIDTH/2, CM_y[0]/2 + CM_y[1]/2 - IMG_HEIGHT/2]
     vec_t = [vec_t_x, vec_t_y]
-    angle = math.acos(-vec_t[1]/math.sqrt(vec_t[0]**2 + vec_t[1]**2))
+    angle = math.acos(vec_t[0]/math.sqrt(vec_t[0]**2 + vec_t[1]**2))
     angle = angle * 180 / math.pi
-    print vec_t
-    print angle
+    print "angle : " + str(angle) + " Deviation : " + str(pos[0])
