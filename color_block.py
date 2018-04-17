@@ -18,6 +18,8 @@ CM_x = range(0, SLICE_NUM)
 CM_y = range(0, SLICE_NUM)
 CM_w = range(0, SLICE_NUM)
 CM_h = range(0, SLICE_NUM)
+
+
 sliced_img = range(0, SLICE_NUM)
 
 while True:
@@ -37,7 +39,8 @@ while True:
         _, conts,h=cv2.findContours(maskFinal.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         cv2.drawContours(sliced_img[i],conts,-1,(255,0,0),3)
         if(conts):
-            x,y,w,h=cv2.boundingRect(conts[0])
+            c = max(conts, key = cv2.contourArea)
+            x,y,w,h=cv2.boundingRect(c)
             CM_x[i] = x + w/2
             CM_y[i] = y + h/2 + X_DIV * i
             CM_w[i] = w
