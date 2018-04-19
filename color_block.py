@@ -5,8 +5,8 @@ import Queue
 import time
 
 SLICE_NUM = 2
-IMG_WIDTH = 340
-IMG_HEIGHT = 220
+IMG_WIDTH = 360
+IMG_HEIGHT = 270
 QUEUE_SIZE = 200
 X_DIV = int(IMG_HEIGHT/float(SLICE_NUM))
 LOOP_DELAY = 0.01
@@ -26,7 +26,7 @@ CM_h = range(0, SLICE_NUM)
 sliced_img = range(0, SLICE_NUM)
 
 PID = [0, 0, 0]
-KPID = [1, 0.005, 1] # Kp, Ki, Kd
+KPID = [1, 1/200 , 1] # Kp, Ki, Kd
 GHB = Queue.Queue(QUEUE_SIZE);
 last = 0;
 
@@ -118,7 +118,11 @@ while True:
         PID[1] = PID[1] - GHB.get() + pos[0]
         GHB.put(pos[0])
 
-    ctrl_val = int(np.dot(PID, KPID))
+
+    ctrl_val = int(np.dot(
+            [PID[0], PID[1]/QUEUE_SIZE, PID[2]], 
+            KPID)/sum(KPID)/2
+    )
 
     print "ANGLE : " + str(angle)
     print "PID :" + str(PID)
