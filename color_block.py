@@ -3,14 +3,18 @@ import numpy as np
 import math
 import Queue
 import time
+import RPi.GPIO as GPIO
 
-CAMERA_NO = 1
-SLICE_NUM = 16
+CAMERA_NO = 0
+SLICE_NUM = 2
 IMG_WIDTH = 360
 IMG_HEIGHT = 270
 QUEUE_SIZE = 200
 X_DIV = int(IMG_HEIGHT/float(SLICE_NUM))
 LOOP_DELAY = 0.01
+PWM_MIN = 2
+PWM_MAX = 11.5
+SERVO_PIN = 12
 
 HSV_LB = np.array([0,0,0])
 HSV_UB = np.array([180,255,75])
@@ -24,7 +28,7 @@ angles = range(0, SLICE_NUM - 1)
 sliced_img = range(0, SLICE_NUM)
 
 PID = [0, 0, 0]
-KPID = [1, 1/200 , 1] # Kp, Ki, Kd
+KPID = [1, 0./QUEUE_SIZE , 1] # Kp, Ki, Kd
 GHB = Queue.Queue(QUEUE_SIZE);
 last = 0;
 
@@ -62,8 +66,18 @@ def contour_pos(contour):
     CM_h = h
     return CM_x, CM_y, CM_w, CM_h
 
+def pwm_end_routine():
+    servo_pwm.ChangeDutyCycle(6.5)
+    PWM_PIN.stop()
+    GPIO.cleanup()
 
 cam = cv2.VideoCapture(CAMERA_NO)
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+servo_pwm = GPIO.PWM(SERVO_PIN, 50)
+servo_pwm.start(6.5)
+
 while True:
     try:
         _, img = cam.read()
@@ -123,18 +137,22 @@ while True:
 
 
         ctrl_val = int(np.dot(
-                [PID[0], PID[1]/QUEUE_SIZE, PID[2]], 
-                KPID)/sum(KPID)/2
+                [PID[0], PID[1], PID[2]], 
+                KPID)/sum(KPID)
         )
+        ctrl_val = np.interp(ctrl_val, [-180, 180], [2, 11.5])
 
         if __debug__:
             cv2.imshow("cam",img)
             cv2.waitKey(10)
-            print "ANGLE : " + str(angles[0])
-            print "PID :" + str(PID)
-            print "CONTROL :" + str(ctrl_val)
+        print "ANGLE : " + str(angles[0])
+        print "PID :" + str(PID)
+        print "CONTROL :" + str(ctrl_val)
 
     except KeyboardInterrupt:
+        servo_pwm.ChangeDutyCycle(6.5)
+        servo_pwm.stop()
+        GPIO.cleanup()
         if __debug__:
             cv2.destroyAllWindows()
         break
