@@ -28,7 +28,7 @@ angles = range(0, SLICE_NUM - 1)
 sliced_img = range(0, SLICE_NUM)
 
 PID = [0, 0, 0]
-KPID = [1, 0./QUEUE_SIZE , 1] # Kp, Ki, Kd
+KPID = [0.1, 0./QUEUE_SIZE , 0] # Kp, Ki, Kd
 GHB = Queue.Queue(QUEUE_SIZE);
 last = 0;
 
@@ -77,6 +77,8 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(SERVO_PIN, GPIO.OUT)
 servo_pwm = GPIO.PWM(SERVO_PIN, 50)
 servo_pwm.start(6.5)
+servo_pwm.ChangeDutyCycle(6.5)
+time.sleep(1)
 
 while True:
     try:
@@ -140,15 +142,17 @@ while True:
                 [PID[0], PID[1], PID[2]], 
                 KPID)/sum(KPID)
         )
-        ctrl_val = np.interp(ctrl_val, [-180, 180], [2, 11.5])
-
+        ctrl_val = np.interp(ctrl_val, [-120, 150], [4.6, 8.6])
+        ctrl_val = np.interp(angles[0], [180, 0], [4.6, 8.6])
+        
         if __debug__:
             cv2.imshow("cam",img)
             cv2.waitKey(10)
         print "ANGLE : " + str(angles[0])
         print "PID :" + str(PID)
         print "CONTROL :" + str(ctrl_val)
-
+        servo_pwm.ChangeDutyCycle(ctrl_val)
+        time.sleep(0.0001)
     except KeyboardInterrupt:
         servo_pwm.ChangeDutyCycle(6.5)
         servo_pwm.stop()
