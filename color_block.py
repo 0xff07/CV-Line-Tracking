@@ -5,15 +5,15 @@ import Queue
 import time
 import RPi.GPIO as GPIO
 
-CAMERA_NO = 1
-SLICE_NUM = 32
+CAMERA_NO = 0
+SLICE_NUM = 16
 IMG_WIDTH = 360
 IMG_HEIGHT = 270
 QUEUE_SIZE = 200
 X_DIV = int(IMG_HEIGHT/float(SLICE_NUM))
 LOOP_DELAY = 0.01
 SERVO_MID = 7
-SERVO_OFFSET = 4
+SERVO_OFFSET = 3
 SERVO_PIN = 12
 
 HSV_LB = np.array([0,0,0])
@@ -30,7 +30,7 @@ angles = range(0, SLICE_NUM - 1)
 sliced_img = range(0, SLICE_NUM)
 
 PID = [0, 0, 0]
-KPID = [1., 0./QUEUE_SIZE , 0.] # Kp, Ki, Kd
+KPID = [1000., 0./QUEUE_SIZE , 3000.] # Kp, Ki, Kd
 GHB = Queue.Queue(QUEUE_SIZE);
 last = 0;
 
@@ -143,6 +143,7 @@ while True:
             PID[1] = PID[1] - GHB.get() + curve_cm[0]
             GHB.put(curve_cm[0])
 
+        delay = curve_cm[0]/20./IMG_WIDTH
         ctrl_val = int(np.dot(PID, KPID)/sum(KPID))
         ctrl_val = np.interp(ctrl_val, [-150, 150], [SERVO_MID - SERVO_OFFSET, SERVO_MID +SERVO_OFFSET])
         print str(ctrl_val) 
@@ -155,7 +156,7 @@ while True:
         print "POS_CURV " 
         print(curve_cm)
         servo_pwm.ChangeDutyCycle(ctrl_val)
-        time.sleep(0.0001)
+        time.sleep(0.01)
     except KeyboardInterrupt:
         servo_pwm.ChangeDutyCycle(6.5)
         servo_pwm.stop()
