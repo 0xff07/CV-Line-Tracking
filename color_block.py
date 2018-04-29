@@ -12,8 +12,8 @@ IMG_HEIGHT = 270
 QUEUE_SIZE = 200
 X_DIV = int(IMG_HEIGHT/float(SLICE_NUM))
 LOOP_DELAY = 0.01
-PWM_MIN = 2
-PWM_MAX = 11.5
+SERVO_MID = 7
+SERVO_OFFSET = 4
 SERVO_PIN = 12
 
 HSV_LB = np.array([0,0,0])
@@ -28,7 +28,7 @@ angles = range(0, SLICE_NUM - 1)
 sliced_img = range(0, SLICE_NUM)
 
 PID = [0, 0, 0]
-KPID = [0.1, 0./QUEUE_SIZE , 0] # Kp, Ki, Kd
+KPID = [50., 10./QUEUE_SIZE , 10000.] # Kp, Ki, Kd
 GHB = Queue.Queue(QUEUE_SIZE);
 last = 0;
 
@@ -140,11 +140,12 @@ while True:
 
         ctrl_val = int(np.dot(
                 [PID[0], PID[1], PID[2]], 
-                KPID)/sum(KPID)
+                [(1 - math.exp(-KPID[0]/100)), 1 - math.exp(-KPID[1]/100), 1 - math.exp(-KPID[2]/100)])/3.
         )
-        ctrl_val = np.interp(ctrl_val, [-120, 150], [4.6, 8.6])
-        ctrl_val = np.interp(angles[0], [180, 0], [4.6, 8.6])
-        
+        ctrl_val = np.interp(ctrl_val, [-150, 150], [SERVO_MID - SERVO_OFFSET, SERVO_MID +SERVO_OFFSET])
+        #ctrl_val = np.interp(ctrl_val, [-120, 150], [SERVO_MID - SERVO_OFFSET, SERVO_MID +SERVO_OFFSET])
+        #ctrl_val = np.interp(angles[0], [0., 180.], [SERVO_MID + SERVO_OFFSET, SERVO_MID - SERVO_OFFSET])
+        print str(ctrl_val) 
         if __debug__:
             cv2.imshow("cam",img)
             cv2.waitKey(10)

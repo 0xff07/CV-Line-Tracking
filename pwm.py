@@ -38,7 +38,7 @@ def end_routine(PWM_objs):
 if __name__ == "__main__":
     try:
         pwm_obj = PWM_Obj(PWM_PIN)
-        ESC_Callibrate(pwm_obj[0])
+        #ESC_Callibrate(pwm_obj[0])
         for i in range(2, 12):
             print str(i)
             pwm_obj[0].ChangeDutyCycle(i)
