@@ -1,26 +1,17 @@
 import RPi.GPIO as GPIO
 import time
 
-PWM_PIN = [12]
 
-def PWM_Obj(PWM_PIN):
+def PWM_init(PWM_PIN):
     GPIO.setmode(GPIO.BOARD)
-    obj = []
-    for i in PWM_PIN:
-        GPIO.setup(i, GPIO.OUT)
-        obj.append(GPIO.PWM(i, 50))
-    for pwm_out in obj:
-        pwm_out.start(2)
-    return obj
+    for i in PWM_PIN.keys():
+        GPIO.setup(PWM_PIN[i], GPIO.OUT)
+    pwm_table = {key:GPIO.PWM(PWM_PIN[i], 50) for key in PWM_PIN}
+    for i in pwm_table:
+        pwm_table[i].start(2.7)
+    return pwm_table
 
-def deg2duty(MIN_i, MAX_i, val, MIN_f = 544, MAX_f = 2400, freq=50):
-    val = float(val)
-    range_i = float(MAX_i) - MIN_i
-    range_f = float(MAX_f) - MIN_f
-    period = 1000000./freq
-    return ((val - MIN_i) / range_i * range_f + MIN_f)/period * 100
-
-def ESC_Callibrate(ESC, DUTY_MAX=11, DUTY_MIN=3):
+def ESC_Callibrate(ESC, DUTY_MAX=12, DUTY_MIN=2.7):
     print "Callibrating high ..."
     ESC.ChangeDutyCycle(DUTY_MAX)
     time.sleep(2)
@@ -29,21 +20,21 @@ def ESC_Callibrate(ESC, DUTY_MAX=11, DUTY_MIN=3):
     time.sleep(2)
     print "Finish callibrating !"
 
-def end_routine(PWM_objs):
-    for i in PWM_objs:
-        i.stop()
+def end_routine(PWM_table):
+    for key in PWM_table:
+        PWM_table[key].stop()
     GPIO.cleanup()
 
 
 if __name__ == "__main__":
     try:
-        pwm_obj = PWM_Obj(PWM_PIN)
-        #ESC_Callibrate(pwm_obj[0])
+        pwm_table = PWM_init({"ESC":12})
+        ESC_Callibrate(pwm_table["ESC"])
         for i in range(2, 12):
             print str(i)
-            pwm_obj[0].ChangeDutyCycle(i)
+            pwm_table["ESC"].ChangeDutyCycle(i)
             time.sleep(2)
-        end_routine(pwm_obj)
-    except KeyboardInterrupt or RuntimeWarning:
-        end_routine(pwm_obj)
+        end_routine(pwm_table)
+    except:
+        end_routine(pwm_table)
         GPIO.cleanup()
