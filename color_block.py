@@ -4,7 +4,7 @@ import math
 import Queue
 import time
 
-ON_RPI = None
+ON_RPI = 1
 
 CAMERA_NO = 0
 IMG_WIDTH = 360
@@ -14,7 +14,7 @@ SERVO_OFFSET = 3
 SERVO_PIN = 12
 
 if ON_RPI:
-    from pwm.py import *
+    from pwm import *
 
 HSV_LB = np.array([0,0,0])
 HSV_UB = np.array([180,255,75])
@@ -149,6 +149,6 @@ while True:
         if ON_RPI:
             PWM_end_routine(pwm)
 
-        if not ON_RPI_:
+        if not ON_RPI:
             cv2.destroyAllWindows()
         break

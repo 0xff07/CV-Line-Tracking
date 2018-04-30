@@ -20,7 +20,7 @@ def ESC_Callibrate(ESC, DUTY_MAX=12, DUTY_MIN=2.7):
     time.sleep(2)
     print "Finish callibrating !"
 
-def end_routine(PWM_table):
+def PWM_end_routine(PWM_table):
     for key in PWM_table:
         PWM_table[key].stop()
     GPIO.cleanup()
