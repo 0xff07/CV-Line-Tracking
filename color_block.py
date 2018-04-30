@@ -108,8 +108,11 @@ while True:
                 curve_cm[1] += 1.*path[i][1]/len(path)
             
             curve_cm = [int(i) for i in curve_cm]
-            vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][0]]
-            ang_sec = int(np.angle(-vec_sec[0] - vec_sec[1] * 1J, deg=True))
+            vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
+            ang_sec = np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
+
+            translate_part = np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
+            angle_part = ang_sec
 
             controller.step(curve_cm[0])
             ctrl_val = controller.get_ctrl()
@@ -118,7 +121,9 @@ while True:
                 for i in range(len(path) - 1):
                     cv2.line(img, path[i] ,path[i + 1],(0, 255, 0),5)
                 print "curve CM : " + str(curve_cm)
-                print "curve angle : " + str(ang_sec)
+                print "secant vec" + str(vec_sec)
+                print "Translate Part : " + str(translate_part)
+                print "Angle Part : " + str(angle_part)
                 cv2.imshow("cam",img)
                 cv2.waitKey(10)
                 controller.dump()
