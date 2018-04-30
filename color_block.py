@@ -127,7 +127,7 @@ while True:
             controller.step(curve_cm[0])
             ctrl_val = evaluate_function(curve_cm[0] - IMG_WIDTH/2, IMG_HEIGHT - curve_cm[1], ang_sec)
 
-            ctrl_val = np.interp(ctrl_val, [0, 180], [2.7, 12])
+            servo_duty = np.interp(ctrl_val, [0, 180], [12, 2.7])
 
             if ON_RPI:
                 pwm["SERVO"].ChangeDutyCycle(pwm_out)
@@ -144,6 +144,7 @@ while True:
                 print "Translate Part : " + str(translate_part)
                 print "Angle Part : " + str(angle_part)
                 print "ctrl : " + str(ctrl_val)
+                print "servo duty" + str(servo_duty)
 
     except:
         if ON_RPI:
