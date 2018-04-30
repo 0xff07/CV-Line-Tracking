@@ -93,7 +93,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
     return valid_points
 
 def evaluate_function(x, y, theta):
-    return ((1 - 1.*x/IMG_WIDTH)*theta + 1.*x/IMG_WIDTH * x/IMG_WIDTH * 180)
+    return ((1 - 1.*x/IMG_WIDTH/2.0)*theta + 1.*x/IMG_WIDTH * x/IMG_WIDTH/2.0 * 180)
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
@@ -130,7 +130,7 @@ while True:
             servo_duty = np.interp(ctrl_val, [0, 180], [12, 2.7])
 
             if ON_RPI:
-                pwm["SERVO"].ChangeDutyCycle(pwm_out)
+                pwm["SERVO"].ChangeDutyCycle(servo_duty)
 
             if not ON_RPI:
                 for i in range(len(path) - 1):
@@ -145,11 +145,5 @@ while True:
                 print "Angle Part : " + str(angle_part)
                 print "ctrl : " + str(ctrl_val)
                 print "servo duty" + str(servo_duty)
-
-    except:
-        if ON_RPI:
-            PWM_end_routine(pwm)
-
-        if not ON_RPI:
-            cv2.destroyAllWindows()
-        break
+    except KeyboardInterrupt:
+        PWM_end_routine(pwm)
