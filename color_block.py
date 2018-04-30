@@ -3,7 +3,8 @@ import numpy as np
 import math
 import Queue
 import time
-#import RPi.GPIO as GPIO
+
+ON_RPI = None
 
 CAMERA_NO = 0
 IMG_WIDTH = 360
@@ -11,6 +12,9 @@ IMG_HEIGHT = 270
 SERVO_MID = 7
 SERVO_OFFSET = 3
 SERVO_PIN = 12
+
+if ON_RPI:
+    from pwm.py import *
 
 HSV_LB = np.array([0,0,0])
 HSV_UB = np.array([180,255,75])
@@ -79,7 +83,8 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
                 seg_size = (w, h)
                 poly_points[i] = (x + w/2, y + h/2 + X_DIV * i)
                 detected_contours[i] = c
-            if __debug__:
+
+            if not ON_RPI:
                 cv2.drawContours(sliced_img, c,-1,(255,0,0),3)
 
         valid_contours = [i for i in detected_contours if i is not None]
@@ -93,6 +98,10 @@ def evaluate_function(x, y, theta):
 
 cam = cv2.VideoCapture(CAMERA_NO)
 controller = PID_controller([100, 0, 400])
+pwm = []
+
+if ON_RPI:
+    pwm = PWM_init({"SERVO":12})
 
 while True:
     try:
@@ -118,21 +127,28 @@ while True:
             controller.step(curve_cm[0])
             ctrl_val = evaluate_function(curve_cm[0] - IMG_WIDTH/2, IMG_HEIGHT - curve_cm[1], ang_sec)
 
-            pwm_out = np.interp(ctrl_val, [0, 180], [2.7, 12])
+            ctrl_val = np.interp(ctrl_val, [0, 180], [2.7, 12])
 
-            if __debug__:
+            if ON_RPI:
+                pwm["SERVO"].ChangeDutyCycle(pwm_out)
+
+            if not ON_RPI:
                 for i in range(len(path) - 1):
                     cv2.line(img, path[i] ,path[i + 1],(0, 255, 0),5)
+                cv2.imshow("cam",img)
+                cv2.waitKey(10)
+
+            if __debug__:
                 print "curve CM : " + str(curve_cm)
                 print "secant vec" + str(vec_sec)
                 print "Translate Part : " + str(translate_part)
                 print "Angle Part : " + str(angle_part)
                 print "ctrl : " + str(ctrl_val)
-                cv2.imshow("cam",img)
-                cv2.waitKey(10)
-                controller.dump()
 
-    except KeyboardInterrupt:
-        if __debug__:
+    except:
+        if ON_RPI:
+            PWM_end_routine(pwm)
+
+        if not ON_RPI_:
             cv2.destroyAllWindows()
         break
