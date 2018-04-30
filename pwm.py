@@ -27,14 +27,10 @@ def end_routine(PWM_table):
 
 
 if __name__ == "__main__":
-    try:
-        pwm_table = PWM_init({"ESC":12})
-        ESC_Callibrate(pwm_table["ESC"])
-        for i in range(2, 12):
-            print str(i)
-            pwm_table["ESC"].ChangeDutyCycle(i)
-            time.sleep(2)
-        end_routine(pwm_table)
-    except:
-        end_routine(pwm_table)
-        GPIO.cleanup()
+    pwm_table = PWM_init({"ESC":12})
+    ESC_Callibrate(pwm_table["ESC"])
+    for i in range(2, 12):
+        print str(i)
+        pwm_table["ESC"].ChangeDutyCycle(i)
+        time.sleep(2)
+    end_routine(pwm_table)
