@@ -87,6 +87,8 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
 
     return valid_points
 
+def evaluate_function(x, y, theta):
+    return ((1 - 1.*x/IMG_WIDTH)*theta + 1.*x/IMG_WIDTH * x/IMG_WIDTH * 180)
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
@@ -107,7 +109,6 @@ while True:
                 curve_cm[0] += 1.*path[i][0]/len(path)
                 curve_cm[1] += 1.*path[i][1]/len(path)
             
-            curve_cm = [int(i) for i in curve_cm]
             vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
             ang_sec = np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
 
@@ -115,7 +116,9 @@ while True:
             angle_part = ang_sec
 
             controller.step(curve_cm[0])
-            ctrl_val = controller.get_ctrl()
+            ctrl_val = evaluate_function(curve_cm[0] - IMG_WIDTH/2, IMG_HEIGHT - curve_cm[1], ang_sec)
+
+            pwm_out = np.interp(ctrl_val, [0, 180], [2.7, 12])
 
             if __debug__:
                 for i in range(len(path) - 1):
@@ -124,6 +127,7 @@ while True:
                 print "secant vec" + str(vec_sec)
                 print "Translate Part : " + str(translate_part)
                 print "Angle Part : " + str(angle_part)
+                print "ctrl : " + str(ctrl_val)
                 cv2.imshow("cam",img)
                 cv2.waitKey(10)
                 controller.dump()
