@@ -4,9 +4,9 @@ import math
 import Queue
 import time
 
-ON_RPI = None
+ON_RPI = 1
 
-CAMERA_NO = 1
+CAMERA_NO = 0
 IMG_WIDTH = 360
 IMG_HEIGHT = 270
 SERVO_MID = 7
@@ -61,7 +61,9 @@ class PID_controller():
 def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,75])):
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
-    blur = cv2.GaussianBlur(img,(5,5),0)
+    blur = cv2.GaussianBlur(img,(41,41),0)
+    cv2.imshow("img_blur", blur)
+    cv2.waitKey(10)
     kernelOpen = np.ones((5,5))
     kernelClose = np.ones((20,20))
     poly_points = [None] * slice_num
@@ -85,11 +87,20 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
             if not ON_RPI:
                 cv2.drawContours(sliced_img, c,-1,(255,0,0),3)
 
-        valid_contours = [i for i in detected_contours if i is not None]
-        valid_points = [i for i in poly_points if i is not None]
+        contours = [i for i in detected_contours if i is not None]
+        points = [i for i in poly_points if i is not None]
 
-    return valid_points
+    valid = 0    
+    for i in range(len(points) - 1, 0, -1):
+        cur = points[i]
+        nxt = points[i - 1]
+        dist = math.sqrt((cur[0] - nxt[0])**2 + (cur[1] - nxt[1])**2)
+        if dist > 0.5*IMG_WIDTH:
+            valid = i
+            break
 
+    return [points[i] for i in range(valid + 1, len(points))]
+#    return [i for i in points if i is not None]
 def evaluate_function(angle_part, translate_part, x, y):
     x = abs(x)
     return math.exp(-1*y/IMG_HEIGHT/20.)*(
