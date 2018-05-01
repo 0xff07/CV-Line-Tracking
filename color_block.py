@@ -4,7 +4,7 @@ import math
 import Queue
 import time
 
-ON_RPI = None
+ON_RPI = 1
 
 CAMERA_NO = 0
 IMG_WIDTH = 360
@@ -17,7 +17,7 @@ if ON_RPI:
     from pwm import *
 
 HSV_LB = np.array([0,0,0])
-HSV_UB = np.array([180,255,75])
+HSV_UB = np.array([180,255,80])
 
 class PID_controller():
     def __init__(self, KPID, QUEUE_SIZE = 2000):
@@ -79,7 +79,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         if(conts):
             c = max(conts, key = cv2.contourArea)
             x, y, w, h = cv2.boundingRect(c)
-            if w < IMG_WIDTH / 4.:
+            if w < IMG_WIDTH / 8.:
                 seg_size = (w, h)
                 poly_points[i] = (x + w/2, y + h/2 + X_DIV * i)
                 detected_contours[i] = c
@@ -100,7 +100,8 @@ def evaluate_function(angle_part, translate_part, x, y):
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([140, 10, 50])
+controller = PID_controller([1000, 10, 150])
+#controller = PID_controller([1000, 0, 150])
 pwm = []
 
 if ON_RPI:
@@ -108,7 +109,7 @@ if ON_RPI:
 
 while True:
     try:
-        resolution = 16
+        resolution = 24
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
         path = extract_polygon(img, resolution)
@@ -129,7 +130,8 @@ while True:
 
             ctrl_estimate = evaluate_function(angle_part, translate_part, curve_cm[0] - IMG_WIDTH/2.0, IMG_HEIGHT - curve_cm[1])
             controller.step(ctrl_estimate)
-            servo_duty = np.interp(ctrl_estimate, [-90, 90], [12, 2.7])
+            ctrl = controller.get_ctrl()
+            servo_duty = np.interp(ctrl, [-90, 90], [3.7, 11])
 
             if ON_RPI:
                 pwm["SERVO"].ChangeDutyCycle(servo_duty)
@@ -151,4 +153,6 @@ while True:
     except KeyboardInterrupt:
         break
         if ON_RPI:
+            pwm["SERVO"].ChangeDutyCycle(SERVO_MID)
+            time.sleep(0.5)
             PWM_end_routine(pwm)
