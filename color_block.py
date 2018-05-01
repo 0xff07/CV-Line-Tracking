@@ -92,8 +92,11 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
 
     return valid_points
 
-def evaluate_function(x, y, theta):
-    return math.exp(-1.*y/IMG_HEIGHT/10.)*((1 - 1.*x/IMG_WIDTH/2.0)*theta + 1.*x/IMG_WIDTH * x/IMG_WIDTH/2.0 * 180)
+def evaluate_function(angle_part, translate_part, x, y):
+    x = abs(x)
+    return math.exp(-1*y/IMG_HEIGHT/20.)*(
+        (1 - 1.*x/IMG_WIDTH/2.0)*angle_part + 
+         1.*x/IMG_WIDTH * translate_part)
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
@@ -119,12 +122,12 @@ while True:
                 curve_cm[1] += 1.*path[i][1]/len(path)
             
             vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
-            ang_sec = np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
+            ang_sec = 90 - np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
 
-            translate_part = np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
+            translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
             angle_part = ang_sec
 
-            ctrl_estimate = evaluate_function(curve_cm[0] - IMG_WIDTH/2, IMG_HEIGHT - curve_cm[1], 90 - ang_sec)
+            ctrl_estimate = evaluate_function(angle_part, translate_part, curve_cm[0] - IMG_WIDTH/2.0, IMG_HEIGHT - curve_cm[1])
             controller.step(ctrl_estimate)
             servo_duty = np.interp(ctrl_estimate, [-90, 90], [12, 2.7])
 
@@ -143,6 +146,7 @@ while True:
                 print "Translate Part : " + str(translate_part)
                 print "Angle Part : " + str(angle_part)
                 print "ctrl estimate: " + str(ctrl_estimate)
+                print "servo duty: " + str(servo_duty)
                 controller.dump()
     except KeyboardInterrupt:
         break
