@@ -4,9 +4,9 @@ import math
 import Queue
 import time
 
-ON_RPI = 1
+ON_RPI = None
 
-CAMERA_NO = 0
+CAMERA_NO = 1
 IMG_WIDTH = 360
 IMG_HEIGHT = 270
 SERVO_MID = 7
@@ -61,14 +61,14 @@ class PID_controller():
 def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,75])):
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
+    blur = cv2.GaussianBlur(img,(5,5),0)
     kernelOpen = np.ones((5,5))
     kernelClose = np.ones((20,20))
-
     poly_points = [None] * slice_num
     detected_contours = [None] * slice_num
     
     for i in range(0, slice_num) :
-        sliced_img = img[X_DIV*i + 1:X_DIV*(i+1), int(0):int(IMG_WIDTH)]
+        sliced_img = blur[X_DIV*i + 1:X_DIV*(i+1), int(0):int(IMG_WIDTH)]
         imgHSV = cv2.cvtColor(sliced_img,cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(imgHSV, LB, UB)
         maskOpen = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
@@ -78,11 +78,9 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
 
         if(conts):
             c = max(conts, key = cv2.contourArea)
-            x, y, w, h = cv2.boundingRect(c)
-            if w < IMG_WIDTH /2.:
-                seg_size = (w, h)
-                poly_points[i] = (x + w/2, y + h/2 + X_DIV * i)
-                detected_contours[i] = c
+            M = cv2.moments(c)
+            poly_points[i] = (int(M['m10']/M['m00']), int(M['m01']/M['m00']) + X_DIV * i)
+            detected_contours[i] = c
 
             if not ON_RPI:
                 cv2.drawContours(sliced_img, c,-1,(255,0,0),3)
