@@ -4,9 +4,9 @@ import math
 import Queue
 import time
 
-ON_RPI = 1
+ON_RPI = 0
 
-CAMERA_NO = 0
+CAMERA_NO = 1
 IMG_WIDTH = 360
 IMG_HEIGHT = 270
 SERVO_MID = 7
@@ -17,7 +17,7 @@ if ON_RPI:
     from pwm import *
 
 HSV_LB = np.array([0,0,0])
-HSV_UB = np.array([180,255,80])
+HSV_UB = np.array([180,255,1])
 
 class PID_controller():
     def __init__(self, KPID, QUEUE_SIZE = 2000):
@@ -79,7 +79,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         if(conts):
             c = max(conts, key = cv2.contourArea)
             x, y, w, h = cv2.boundingRect(c)
-            if w < IMG_WIDTH / 8.:
+            if w < IMG_WIDTH /2.:
                 seg_size = (w, h)
                 poly_points[i] = (x + w/2, y + h/2 + X_DIV * i)
                 detected_contours[i] = c
@@ -109,7 +109,7 @@ if ON_RPI:
 
 while True:
     try:
-        resolution = 24
+        resolution = 16
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
         path = extract_polygon(img, resolution)
