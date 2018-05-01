@@ -4,7 +4,7 @@ import math
 import Queue
 import time
 
-ON_RPI = 1
+ON_RPI = None
 
 CAMERA_NO = 0
 IMG_WIDTH = 360
@@ -93,11 +93,11 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
     return valid_points
 
 def evaluate_function(x, y, theta):
-    return ((1 - 1.*x/IMG_WIDTH/2.0)*theta + 1.*x/IMG_WIDTH * x/IMG_WIDTH/2.0 * 180)
+    return math.exp(-1.*y/IMG_HEIGHT/10.)*((1 - 1.*x/IMG_WIDTH/2.0)*theta + 1.*x/IMG_WIDTH * x/IMG_WIDTH/2.0 * 180)
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([100, 0, 400])
+controller = PID_controller([140, 10, 50])
 pwm = []
 
 if ON_RPI:
@@ -124,10 +124,9 @@ while True:
             translate_part = np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
             angle_part = ang_sec
 
-            controller.step(curve_cm[0])
-            ctrl_val = evaluate_function(curve_cm[0] - IMG_WIDTH/2, IMG_HEIGHT - curve_cm[1], ang_sec)
-
-            servo_duty = np.interp(ctrl_val, [0, 180], [12, 2.7])
+            ctrl_estimate = evaluate_function(curve_cm[0] - IMG_WIDTH/2, IMG_HEIGHT - curve_cm[1], 90 - ang_sec)
+            controller.step(ctrl_estimate)
+            servo_duty = np.interp(ctrl_estimate, [-90, 90], [12, 2.7])
 
             if ON_RPI:
                 pwm["SERVO"].ChangeDutyCycle(servo_duty)
@@ -143,7 +142,9 @@ while True:
                 print "secant vec" + str(vec_sec)
                 print "Translate Part : " + str(translate_part)
                 print "Angle Part : " + str(angle_part)
-                print "ctrl : " + str(ctrl_val)
-                print "servo duty" + str(servo_duty)
+                print "ctrl estimate: " + str(ctrl_estimate)
+                controller.dump()
     except KeyboardInterrupt:
-        PWM_end_routine(pwm)
+        break
+        if ON_RPI:
+            PWM_end_routine(pwm)
