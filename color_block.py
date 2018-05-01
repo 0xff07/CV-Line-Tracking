@@ -17,7 +17,7 @@ if ON_RPI:
     from pwm import *
 
 HSV_LB = np.array([0,0,0])
-HSV_UB = np.array([180,255,1])
+HSV_UB = np.array([1,255,1])
 
 class PID_controller():
     def __init__(self, KPID, QUEUE_SIZE = 2000):
