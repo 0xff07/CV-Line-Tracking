@@ -4,9 +4,9 @@ import math
 import Queue
 import time
 
-ON_RPI = None
+ON_RPI = 1
 
-CAMERA_NO = 1
+CAMERA_NO = 0
 IMG_WIDTH = 640
 IMG_HEIGHT = 480
 SERVO_MID = 7
