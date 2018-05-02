@@ -7,8 +7,8 @@ import time
 ON_RPI = 1
 
 CAMERA_NO = 0
-IMG_WIDTH = 640
-IMG_HEIGHT = 480
+IMG_WIDTH = 320
+IMG_HEIGHT = 240
 SERVO_MID = 7
 SERVO_OFFSET = 3
 SERVO_PIN = 12
@@ -58,7 +58,8 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,53])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,40])):
+
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
     kernelOpen = np.ones((5,5))
@@ -68,7 +69,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
     
     for i in range(0, slice_num) :
         sliced_img = img[X_DIV*i + 1:X_DIV*(i+1), int(0):int(IMG_WIDTH)]
-        blur = cv2.GaussianBlur(sliced_img,(5,5),0)
+        blur = cv2.GaussianBlur(sliced_img,(11,11),0)
         imgHSV = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(imgHSV, LB, UB)
         maskOpen = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
@@ -121,7 +122,7 @@ while True:
         resolution = 16
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-        img = img[int(IMG_HEIGHT* 0.5):IMG_HEIGHT, 0:IMG_WIDTH]
+        img = img[int(IMG_HEIGHT* 0.8):IMG_HEIGHT, 0:IMG_WIDTH]
         path = extract_polygon(img, resolution)
 
         if not len(path) == 0:
