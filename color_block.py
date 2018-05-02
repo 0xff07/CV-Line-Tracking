@@ -7,8 +7,8 @@ import time
 ON_RPI = None
 
 CAMERA_NO = 1
-IMG_WIDTH = 360
-IMG_HEIGHT = 270
+IMG_WIDTH = 640
+IMG_HEIGHT = 480
 SERVO_MID = 7
 SERVO_OFFSET = 3
 SERVO_PIN = 12
@@ -121,6 +121,7 @@ while True:
         resolution = 16
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
+        img = img[int(IMG_HEIGHT* 0.6):IMG_HEIGHT, 0:IMG_WIDTH]
         path = extract_polygon(img, resolution)
 
         if not len(path) == 0:
