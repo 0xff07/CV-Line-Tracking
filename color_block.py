@@ -4,9 +4,9 @@ import math
 import Queue
 import time
 
-ON_RPI = 1
+ON_RPI = None
 
-CAMERA_NO = 0
+CAMERA_NO = 1
 IMG_WIDTH = 360
 IMG_HEIGHT = 270
 SERVO_MID = 7
@@ -58,7 +58,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,75])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,50])):
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
     kernelOpen = np.ones((5,5))
@@ -91,16 +91,16 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         points = [i for i in poly_points if i is not None]
 
     valid = 0    
-    for i in range(len(points) - 1, 0, -1):
+    for i in range(len(points) - 1):
         cur = points[i]
-        nxt = points[i - 1]
+        nxt = points[i + 1]
         dist = math.sqrt((cur[0] - nxt[0])**2 + (cur[1] - nxt[1])**2)
-        if dist > 0.5*IMG_WIDTH:
+        if dist > 0.8*IMG_WIDTH:
             valid = i
             break
 
-    return [points[i] for i in range(valid + 1, len(points))]
-#    return [i for i in points if i is not None]
+    #return [points[i] for i in range(valid)]
+    return [i for i in points if i is not None]
 def evaluate_function(angle_part, translate_part, x, y):
     x = abs(x)
     return math.exp(-1*y/IMG_HEIGHT/20.)*(
