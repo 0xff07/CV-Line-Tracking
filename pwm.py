@@ -8,7 +8,7 @@ def PWM_init(PWM_PIN):
         GPIO.setup(PWM_PIN[i], GPIO.OUT)
     pwm_table = {key:GPIO.PWM(PWM_PIN[i], 50) for key in PWM_PIN}
     for i in pwm_table:
-        pwm_table[i].start(2.7)
+        pwm_table[i].start(7)
     return pwm_table
 
 def ESC_Callibrate(ESC, DUTY_MAX=12, DUTY_MIN=2.7):

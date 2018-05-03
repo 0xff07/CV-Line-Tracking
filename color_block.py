@@ -3,6 +3,9 @@ import numpy as np
 import math
 import Queue
 import time
+import serial
+import os
+
 
 ON_RPI = 1
 
@@ -58,7 +61,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,40])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,30])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
@@ -69,7 +72,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
     
     for i in range(0, slice_num) :
         sliced_img = img[X_DIV*i + 1:X_DIV*(i+1), int(0):int(IMG_WIDTH)]
-        blur = cv2.GaussianBlur(sliced_img,(11,11),0)
+        blur = cv2.GaussianBlur(sliced_img,(31,31),0)
         imgHSV = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(imgHSV, LB, UB)
         maskOpen = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
@@ -79,7 +82,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
 
         conts = sorted(conts, key = cv2.contourArea)
         if(conts):
-            c = conts[0]
+            c = max(conts)
             
             M = cv2.moments(c)
             poly_points[i] = (int(M['m10']/M['m00']), int(M['m01']/M['m00']) + X_DIV * i)
@@ -96,7 +99,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         cur = points[i]
         nxt = points[i + 1]
         dist = math.sqrt((cur[0] - nxt[0])**2 + (cur[1] - nxt[1])**2)
-        if dist > 0.3*IMG_WIDTH:
+        if dist > 0.8*IMG_WIDTH:
             valid = i
             break
 
@@ -110,19 +113,18 @@ def evaluate_function(angle_part, translate_part, x, y):
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 10, 150])
-#controller = PID_controller([1000, 0, 150])
-pwm = []
-
+controller = PID_controller([1000, 100, 150])
 if ON_RPI:
     pwm = PWM_init({"SERVO":12})
+    os.system("python arduino_start.py")
 
 while True:
+    time.sleep(0.05)
     try:
         resolution = 16
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-        img = img[int(IMG_HEIGHT* 0.8):IMG_HEIGHT, 0:IMG_WIDTH]
+        img = img[int(IMG_HEIGHT* 0.3):IMG_HEIGHT, 0:IMG_WIDTH]
         path = extract_polygon(img, resolution)
 
         if not len(path) == 0:
@@ -161,9 +163,10 @@ while True:
                 print "ctrl estimate: " + str(ctrl_estimate)
                 print "servo duty: " + str(servo_duty)
                 controller.dump()
-    except KeyboardInterrupt:
-        break
+    except:
         if ON_RPI:
             pwm["SERVO"].ChangeDutyCycle(SERVO_MID)
-            time.sleep(0.5)
+            os.system("python arduino_end.py")
+            time.sleep(2)
             PWM_end_routine(pwm)
+        break
