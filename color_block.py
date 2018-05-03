@@ -60,7 +60,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,50])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,75])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
@@ -129,10 +129,11 @@ if ON_RPI:
     os.system("python arduino_start.py")
 
 # 11.75 ~ 2
-
 SERVO_MID = 7.5
 SERVO_OFFSET = 4
 
+ctrl_last = SERVO_MID
+ctrl = SERVO_MID
 while True:
     try:
         resolution = 16
@@ -143,31 +144,44 @@ while True:
 
         if not len(path) == 0:
             n = len(path)
-
-            curve_cm = [0, 0]
-            for i in range(0, len(path)):
-                curve_cm[0] += 1.*path[i][0]/len(path)
-                curve_cm[1] += 1.*path[i][1]/len(path)
-            
-            vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
-            ang_sec = 90 - np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
-
-            translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
-            angle_part = ang_sec
-
-            ctrl_estimate = evaluate_function(angle_part, translate_part, curve_cm[0] - IMG_WIDTH/2.0, IMG_HEIGHT - curve_cm[1])
-            controller.step(ctrl_estimate)
-            ctrl = controller.get_ctrl()
-            servo_duty = np.interp(ctrl, [-90, 90], [SERVO_MID - SERVO_OFFSET, SERVO_MID + SERVO_OFFSET])
-
-            if ON_RPI:
-                pwm["SERVO"].ChangeDutyCycle(servo_duty)
+            hull = cv2.convexHull(np.array(path))
+            area = cv2.contourArea(hull)
+            #print "Hull Area : " + str(area)
 
             if not ON_RPI:
                 for i in range(len(path) - 1):
                     cv2.line(img, path[i] ,path[i + 1],(0, 255, 0),5)
+                cv2.drawContours(img,[hull],0,(255,0,0),-1)            
                 cv2.imshow("cam",img)
                 cv2.waitKey(10)
+
+            if IMG_HEIGHT * IMG_HEIGHT / 20.0 < area:
+                ctrl = ctrl_last
+                #print "Noise Detected ! ! !"
+            else:
+                curve_cm = [0, 0]
+                for i in range(0, len(path)):
+                    curve_cm[0] += 1.*path[i][0]/len(path)
+                    curve_cm[1] += 1.*path[i][1]/len(path)
+            
+                vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
+                ang_sec = 90 - np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
+
+                translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
+                angle_part = ang_sec
+
+                ctrl_estimate = evaluate_function(angle_part, translate_part, \
+                                curve_cm[0] - IMG_WIDTH/2.0, IMG_HEIGHT - curve_cm[1])
+                controller.step(ctrl_estimate)
+                ctrl = controller.get_ctrl()
+                ctrl_last = ctrl
+
+            servo_duty = np.interp(ctrl, [-90, 90], [SERVO_MID - SERVO_OFFSET, SERVO_MID + SERVO_OFFSET])
+
+            print "SERVO_DUTY : " + str(servo_duty)
+
+            if ON_RPI:
+                pwm["SERVO"].ChangeDutyCycle(servo_duty)
 
             if __debug__:
                 print "curve CM : " + str(curve_cm)
@@ -177,6 +191,8 @@ while True:
                 print "ctrl estimate: " + str(ctrl_estimate)
                 print "servo duty: " + str(servo_duty)
                 controller.dump()
+
+
     except KeyboardInterrupt:
         if ON_RPI:
             pwm["SERVO"].ChangeDutyCycle(SERVO_MID)
