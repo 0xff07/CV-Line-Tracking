@@ -3,11 +3,10 @@ import numpy as np
 import math
 import Queue
 import time
-import serial
 import os
 
 
-ON_RPI = 1
+ON_RPI = None
 
 CAMERA_NO = 0
 IMG_WIDTH = 320
@@ -61,7 +60,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,30])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,40])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
@@ -163,7 +162,7 @@ while True:
                 print "ctrl estimate: " + str(ctrl_estimate)
                 print "servo duty: " + str(servo_duty)
                 controller.dump()
-    except:
+    except KeyboardInterrupt:
         if ON_RPI:
             pwm["SERVO"].ChangeDutyCycle(SERVO_MID)
             os.system("python arduino_end.py")
