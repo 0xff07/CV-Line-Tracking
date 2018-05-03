@@ -176,22 +176,22 @@ while True:
                 ctrl = controller.get_ctrl()
                 ctrl_last = ctrl
 
+                if __debug__:
+                    print "curve CM : " + str(curve_cm)
+                    print "secant vec" + str(vec_sec)
+                    print "Translate Part : " + str(translate_part)
+                    print "Angle Part : " + str(angle_part)
+                    print "ctrl estimate: " + str(ctrl_estimate)
+                    print "servo duty: " + str(servo_duty)
+                    controller.dump()
+
+
             servo_duty = np.interp(ctrl, [-90, 90], [SERVO_MID - SERVO_OFFSET, SERVO_MID + SERVO_OFFSET])
 
             print "SERVO_DUTY : " + str(servo_duty)
 
             if ON_RPI:
                 pwm["SERVO"].ChangeDutyCycle(servo_duty)
-
-            if __debug__:
-                print "curve CM : " + str(curve_cm)
-                print "secant vec" + str(vec_sec)
-                print "Translate Part : " + str(translate_part)
-                print "Angle Part : " + str(angle_part)
-                print "ctrl estimate: " + str(ctrl_estimate)
-                print "servo duty: " + str(servo_duty)
-                controller.dump()
-
 
     except KeyboardInterrupt:
         if ON_RPI:
