@@ -6,7 +6,7 @@ import time
 import os
 
 
-ON_RPI = None
+ON_RPI = 1
 
 CAMERA_NO = 0
 IMG_WIDTH = 320
@@ -60,7 +60,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,50])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,75])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
@@ -111,7 +111,7 @@ def evaluate_function(angle_part, translate_part, x, y):
 
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 100, 150])
+controller = PID_controller([1000, 10, 150])
 if ON_RPI:
     pwm = PWM_init({"SERVO":12})
     os.system("python arduino_start.py")
