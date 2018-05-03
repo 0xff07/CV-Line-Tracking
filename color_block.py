@@ -77,7 +77,8 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         maskOpen = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
         maskClose=cv2.morphologyEx(maskOpen,cv2.MORPH_CLOSE,kernelClose)
         maskFinal = maskClose
-        _,conts,_ = cv2.findContours(maskFinal.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+        _,conts,_ = cv2.findContours(maskFinal.copy(),\
+                    cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
 
         if(conts):
             c = max(conts, key = cv2.contourArea)
@@ -92,17 +93,8 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         contours = [i for i in detected_contours if i is not None]
         points = [i for i in poly_points if i is not None]
 
-    valid = 0    
-    for i in range(len(points) - 1):
-        cur = points[i]
-        nxt = points[i + 1]
-        dist = math.sqrt((cur[0] - nxt[0])**2 + (cur[1] - nxt[1])**2)
-        if dist > 0.8*IMG_WIDTH:
-            valid = i
-            break
+   return [i for i in points if i is not None]
 
-    #return [points[i] for i in range(valid)]
-    return [i for i in points if i is not None]
 def evaluate_function(angle_part, translate_part, x, y):
     x = abs(x)
     return math.exp(-1*y/IMG_HEIGHT/20.)*(
@@ -155,7 +147,7 @@ while True:
                 cv2.imshow("cam",img)
                 cv2.waitKey(10)
 
-            if IMG_HEIGHT * IMG_HEIGHT / 20.0 < area:
+            if IMG_HEIGHT * IMG_HEIGHT / 30.0 < area:
                 ctrl = ctrl_last
                 #print "Noise Detected ! ! !"
             else:
