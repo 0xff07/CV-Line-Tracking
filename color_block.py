@@ -9,8 +9,8 @@ import os
 ON_RPI = 1
 
 CAMERA_NO = 0
-IMG_WIDTH = 320
-IMG_HEIGHT = 240
+IMG_WIDTH = 640
+IMG_HEIGHT = 480
 SERVO_MID = 8
 SERVO_OFFSET = 3
 SERVO_PIN = 12
@@ -60,7 +60,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,75])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,45])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
@@ -71,7 +71,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
     
     for i in range(0, slice_num) :
         sliced_img = img[X_DIV*i + 1:X_DIV*(i+1), int(0):int(IMG_WIDTH)]
-        blur = cv2.GaussianBlur(sliced_img,(31,31),0)
+        blur = cv2.GaussianBlur(sliced_img,(41,41),0)
         imgHSV = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(imgHSV, LB, UB)
         maskOpen = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)
@@ -93,7 +93,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
         contours = [i for i in detected_contours if i is not None]
         points = [i for i in poly_points if i is not None]
 
-   return [i for i in points if i is not None]
+    return [i for i in points if i is not None]
 
 def evaluate_function(angle_part, translate_part, x, y):
     x = abs(x)
@@ -115,7 +115,7 @@ def servo_test(pwm, SERVO_MID, SERVO_OFFSET):
  
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 0, 350])
+controller = PID_controller([1000, 0, 400])
 if ON_RPI:
     pwm = PWM_init({"SERVO":12})
     os.system("python arduino_start.py")
@@ -128,7 +128,7 @@ ctrl_last = SERVO_MID
 ctrl = SERVO_MID
 while True:
     try:
-        resolution = 16
+        resolution = 32
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
         img = img[int(IMG_HEIGHT* 0.3):IMG_HEIGHT, 0:IMG_WIDTH]
@@ -147,7 +147,7 @@ while True:
                 cv2.imshow("cam",img)
                 cv2.waitKey(10)
 
-            if IMG_HEIGHT * IMG_HEIGHT / 30.0 < area:
+            if IMG_HEIGHT * IMG_HEIGHT / 50.0 < area:
                 ctrl = ctrl_last
                 #print "Noise Detected ! ! !"
             else:
@@ -174,12 +174,11 @@ while True:
                     print "Translate Part : " + str(translate_part)
                     print "Angle Part : " + str(angle_part)
                     print "ctrl estimate: " + str(ctrl_estimate)
-                    print "servo duty: " + str(servo_duty)
                     controller.dump()
 
 
             servo_duty = np.interp(ctrl, [-90, 90], [SERVO_MID - SERVO_OFFSET, SERVO_MID + SERVO_OFFSET])
-
+            
             print "SERVO_DUTY : " + str(servo_duty)
 
             if ON_RPI:
