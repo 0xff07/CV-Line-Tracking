@@ -58,7 +58,7 @@ class PID_controller():
         print "PID : " + str(self.PID)
         print "CONTROL : " + str(self.ctrl)
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,40])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,60])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
@@ -113,14 +113,14 @@ def servo_test(pwm, SERVO_MID, SERVO_OFFSET):
  
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 0, 300])
+controller = PID_controller([1000, 16, 800])
 if ON_RPI:
     pwm = PWM_init({"SERVO":12})
     os.system("python arduino_start.py")
 
 # 11.75 ~ 2
 SERVO_MID = 7.5
-SERVO_OFFSET = 3
+SERVO_OFFSET = 4
 
 ctrl_last = SERVO_MID
 ctrl = SERVO_MID
@@ -129,7 +129,7 @@ while True:
         resolution = 16
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-        img = img[int(IMG_HEIGHT* 0.4):IMG_HEIGHT, 0:IMG_WIDTH]
+        img = img[int(0.3*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
         path = extract_polygon(img, resolution)
 
         if not len(path) == 0:
