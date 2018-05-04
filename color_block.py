@@ -113,7 +113,7 @@ def servo_test(pwm, SERVO_MID, SERVO_OFFSET):
  
 
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 16, 800])
+controller = PID_controller([1000, 16, 0])
 if ON_RPI:
     pwm = PWM_init({"SERVO":12})
     os.system("python arduino_start.py")
@@ -126,10 +126,10 @@ ctrl_last = SERVO_MID
 ctrl = SERVO_MID
 while True:
     try:
-        resolution = 16
+        resolution = 32
         _, img = cam.read()
         img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-        img = img[int(0.3*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
+        img = img[int(0.45*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
         path = extract_polygon(img, resolution)
 
         if not len(path) == 0:

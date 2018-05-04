@@ -7,6 +7,6 @@ time.sleep(3)
 print "ESC Calibrating..."
 arduino_slave.write('-1')
 time.sleep(5)
-arduino_slave.write('-80')
+arduino_slave.write('-70')
 time.sleep(1.2)
-arduino_slave.write('-41')
+arduino_slave.write('-38')
