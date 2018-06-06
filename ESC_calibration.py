@@ -1,7 +1,6 @@
 import time
 import pigpio 
 
-
 class ARSCHLOCH:
     def __init__(self):
         self.STEER = 19
@@ -82,22 +81,13 @@ if __name__ == "__main__":
     arschloch = ARSCHLOCH()
     arschloch.turn_on()
 
-    #pi = pigpio.pi()
-    #start_routine(SERVO_PIN)
     atexit.register(arschloch.turn_off)
-    #try:
-    if True:
+    try:
         arschloch.callibrate_ESC()
         arschloch.accelerate(1)
         time.sleep(5)
         while 1:
             for i in arschloch.SERVO_PIN:
                 arschloch.test_servo()
-        #ESC_callibration(6)
-        #pi.set_PWM_dutycycle(6, 11)
-        #time.sleep(10)
-        #while 1:
-            #for i in SERVO_PIN:
-                #test_servo(i)
-    #except:
-        #exit()
+    except:
+        exit()
