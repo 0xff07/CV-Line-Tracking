@@ -1,15 +1,12 @@
 import cv2
 import numpy as np
 import math
-import Queue
 import time
-import os
 import atexit
 from pid import *
 from geometry import *
-from ARSCHLOCH import *
 
-ON_RPI = 1
+ON_RPI = 0
 CAMERA_NO = 0
 IMG_WIDTH = 320
 IMG_HEIGHT = 240
