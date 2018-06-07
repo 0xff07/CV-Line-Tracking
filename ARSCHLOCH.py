@@ -1,6 +1,7 @@
 import time
 import pigpio 
 import sonar_ranger
+import numpy as np
 
 class ARSCHLOCH:
     def __init__(self):
@@ -9,10 +10,12 @@ class ARSCHLOCH:
         self.ESC = 6
         self.SONAR_ECHO = 17
         self.SONAR_TRIG = 27
-        self.S_MID = 16
-        self.S_AMP = 4
+        self.S_MID = 17
+        self.S_AMP = 5
+        self.MAX_DUTY = self.S_MID + self.S_AMP
+        self.MIN_DUTY = self.S_MID - self.S_AMP
         self.ESC_MINDUTY = 10
-        self.ESC_MAXDUTY = 30
+        self.ESC_MAXDUTY = 40
         self.SERVO_PIN = [self.STEER, self.FAN_ANG]
         self.ESC_PIN = [self.ESC]
         self.SENSOR_PIN_OUT = [self.SONAR_ECHO]
@@ -54,21 +57,21 @@ class ARSCHLOCH:
 
     def accelerate(self, speed = 1):
         if speed < 0:
-            duty = 10
-        elif speed > 30:
-            duty = 30
+            duty = self.ESC_MINDUTY
+        elif speed > self.ESC_MAXDUTY - self.ESC_MINDUTY:
+            duty = self.ESC_MAXDUTY
         else:
-            duty = speed + 10
+            duty = speed + self.ESC_MINDUTY
         self.pi.set_PWM_dutycycle(self.ESC, duty)
 
     def steer(self, theta):
-        if theta < 35:
-            theta = 35
-        elif theta > 145:
-            theta = 145
-        else:
-            duty = int(round((35. - theta)/11 + 21))
-            self.pi.set_PWM_dutycycle(self.STEER, duty)
+        if theta < 0:
+            theta = 0
+        elif theta > 180:
+            theta = 180
+        theta = int(np.interp(theta, [0, 180], [35, 145]))
+        duty = 1.*self.MAX_DUTY + 1.*theta / 180. * (1.*self.MIN_DUTY - 1.*self.MAX_DUTY)
+        self.pi.set_PWM_dutycycle(self.STEER, int(duty))
 
     def get_distance(self):
         return self.ranger.read()
@@ -97,10 +100,12 @@ if __name__ == "__main__":
     atexit.register(arschloch.turn_off)
     try:
         arschloch.callibrate_ESC()
-        arschloch.accelerate(1)
-        time.sleep(5)
-        while 1:
-            for i in arschloch.SERVO_PIN:
-                arschloch.test_servo()
+        arschloch.accelerate(4)
+        while(1):
+            a = 1
+        #time.sleep(5)
+        #while 1:
+            #for i in arschloch.SERVO_PIN:
+                #arschloch.test_servo()
     except:
         exit()
