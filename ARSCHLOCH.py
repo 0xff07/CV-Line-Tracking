@@ -1,13 +1,14 @@
 import time
 import pigpio 
+import sonar_ranger
 
 class ARSCHLOCH:
     def __init__(self):
         self.STEER = 19
         self.FAN_ANG = 13
         self.ESC = 6
-        self.SONAR_ECHO = 27
-        self.SONAR_TRIG = 17
+        self.SONAR_ECHO = 17
+        self.SONAR_TRIG = 27
         self.S_MID = 16
         self.S_AMP = 5
         self.SERVO_PIN = [self.STEER, self.FAN_ANG]
@@ -16,6 +17,7 @@ class ARSCHLOCH:
         self.SENSOR_PIN_IN = [self.SONAR_TRIG]
         self.PWM_TEST_SEQ = [self.S_MID, self.S_MID + self.S_AMP, self.S_MID, self.S_MID - self.S_AMP]
         self.pi = pigpio.pi()
+        self.ranger = sonar_ranger.ranger(self.pi, self.SONAR_TRIG, self.ECHO)
 
     def turn_on(self):
         for i in self.SERVO_PIN + self.ESC_PIN + self.SENSOR_PIN_OUT:
@@ -37,7 +39,9 @@ class ARSCHLOCH:
         time.sleep(1)
         for i in self.SERVO_PIN:
             self.pi.set_PWM_dutycycle(i, 0)
-        print "Clean Sensor Pin..."
+        print "Stop sonar ranger ..."
+        self.ranger.cancel()
+        print "Clean Sensor pins..."
         for i in self.SENSOR_PIN_IN:
             self.pi.set_PWM_dutycycle(i, 0)
         self.pi.stop()
