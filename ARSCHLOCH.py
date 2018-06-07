@@ -11,19 +11,25 @@ class ARSCHLOCH:
         self.SONAR_TRIG = 27
         self.S_MID = 16
         self.S_AMP = 5
+        self.ESC_MINDUTY = 10
+        self.ESC_MAXDUTY = 30
         self.SERVO_PIN = [self.STEER, self.FAN_ANG]
         self.ESC_PIN = [self.ESC]
         self.SENSOR_PIN_OUT = [self.SONAR_ECHO]
         self.SENSOR_PIN_IN = [self.SONAR_TRIG]
         self.PWM_TEST_SEQ = [self.S_MID, self.S_MID + self.S_AMP, self.S_MID, self.S_MID - self.S_AMP]
         self.pi = pigpio.pi()
-        self.ranger = sonar_ranger.ranger(self.pi, self.SONAR_TRIG, self.ECHO)
+        self.ranger = sonar_ranger.ranger(self.pi, self.SONAR_TRIG, self.SONAR_ECHO)
 
     def turn_on(self):
-        for i in self.SERVO_PIN + self.ESC_PIN + self.SENSOR_PIN_OUT:
+        for i in self.SERVO_PIN + self.SENSOR_PIN_OUT:
             self.pi.set_mode(i, pigpio.OUTPUT)
             self.pi.set_PWM_frequency(i, 50)
             self.pi.set_PWM_dutycycle(i, self.S_MID)
+        for i in self.ESC_PIN:
+            self.pi.set_mode(i, pigpio.OUTPUT)
+            self.pi.set_PWM_frequency(i, 50)
+            self.pi.set_PWM_dutycycle(i, 0)
         for i in self.SENSOR_PIN_IN:
             self.pi.set_mode(i, pigpio.INPUT)
             self.pi.set_PWM_frequency(i, 50)
@@ -64,6 +70,9 @@ class ARSCHLOCH:
             duty = int(round((35. - theta)/11 + 21))
             self.pi.set_PWM_dutycycle(self.STEER, duty)
 
+    def get_distance(self):
+        return self.ranger.read()
+
     def test_servo(self):
         for i in self.PWM_TEST_SEQ:
             for j in self.SERVO_PIN:
@@ -72,12 +81,12 @@ class ARSCHLOCH:
 
     def callibrate_ESC(self):
         print "calibration high ..."
-        self.pi.set_PWM_dutycycle(self.ESC, 30)
+        self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MAXDUTY)
         time.sleep(2)
         print "calibration low ..."
-        self.pi.set_PWM_dutycycle(self.ESC, 10)
+        self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MINDUTY)
         time.sleep(2)
-        self.pi.set_PWM_dutycycle(self.ESC, 10)
+        self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MINDUTY)
         print "Finish calibration !"
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import atexit
 from pid import *
 from geometry import *
 
-ON_RPI = 0
+ON_RPI = 1
 CAMERA_NO = 0
 IMG_WIDTH = 320
 IMG_HEIGHT = 240

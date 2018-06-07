@@ -70,8 +70,8 @@ class ranger:
          self.pi.gpio_trigger(self._trig)
          start = time.time()
          while not self._ping:
-            if (time.time()-start) > 5.0:
-               return 20000
+            if (time.time()-start) > 0.1:
+               return 3400
             time.sleep(0.001)
          return self._time
       else:
