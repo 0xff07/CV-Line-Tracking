@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import time
-
 import pigpio
 
 class ranger:
@@ -89,26 +88,17 @@ class ranger:
          self.pi.set_mode(self._echo, self._echo_mode)
 
 if __name__ == "__main__":
-
    import time
-
    import pigpio
-
    import sonar_ranger
    pi = pigpio.pi()
-
-   sonar = sonar_ranger.ranger(pi, 27, 17)
-
+   sonar = sonar_ranger.ranger(pi, 17, 27)
    end = time.time() + 600.0
-
    r = 1
    while time.time() < end:
-
       print("{} {}".format(r, sonar.read()))
       r += 1
       time.sleep(0.03)
-
    sonar.cancel()
-
    pi.stop()
 

@@ -18,8 +18,8 @@ class ARSCHLOCH:
         self.ESC_MAXDUTY = 40
         self.SERVO_PIN = [self.STEER, self.FAN_ANG]
         self.ESC_PIN = [self.ESC]
-        self.SENSOR_PIN_OUT = [self.SONAR_ECHO]
-        self.SENSOR_PIN_IN = [self.SONAR_TRIG]
+        self.SENSOR_PIN_OUT = []
+        self.SENSOR_PIN_IN = []
         self.PWM_TEST_SEQ = [self.S_MID, self.S_MID + self.S_AMP, self.S_MID, self.S_MID - self.S_AMP]
         self.pi = pigpio.pi()
         self.ranger = sonar_ranger.ranger(self.pi, self.SONAR_TRIG, self.SONAR_ECHO)
@@ -99,10 +99,12 @@ if __name__ == "__main__":
 
     atexit.register(arschloch.turn_off)
     try:
-        arschloch.callibrate_ESC()
-        arschloch.accelerate(4)
+        #arschloch.callibrate_ESC()
+        #arschloch.accelerate(4)
+        #arschloch.turn_off()
         while(1):
-            a = 1
+            res = arschloch.get_distance()
+            print(res)
         #time.sleep(5)
         #while 1:
             #for i in arschloch.SERVO_PIN:
