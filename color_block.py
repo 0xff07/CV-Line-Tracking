@@ -5,8 +5,9 @@ import time
 import atexit
 from pid import *
 from geometry import *
+from equalization import *
 
-ON_RPI = 1
+ON_RPI = 0
 CAMERA_NO = 0
 IMG_WIDTH = 320
 IMG_HEIGHT = 240
@@ -35,6 +36,7 @@ while True:
     _, img = cam.read()
     img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
     img = img[int(0.45*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
+    img = CLACHE_equalization(img)
     path, poly = extract_polygon(img, resolution)
 
     if not len(path) == 0:

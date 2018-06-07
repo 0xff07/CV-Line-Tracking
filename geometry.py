@@ -2,7 +2,7 @@ import cv2
 import math
 import numpy as np
 
-def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,60])):
+def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,255,50])):
 
     IMG_HEIGHT, IMG_WIDTH,_ = img.shape
     X_DIV = int(IMG_HEIGHT/float(slice_num))
