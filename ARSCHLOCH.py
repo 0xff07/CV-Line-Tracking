@@ -10,7 +10,7 @@ class ARSCHLOCH:
         self.SONAR_ECHO = 17
         self.SONAR_TRIG = 27
         self.S_MID = 16
-        self.S_AMP = 5
+        self.S_AMP = 4
         self.ESC_MINDUTY = 10
         self.ESC_MAXDUTY = 30
         self.SERVO_PIN = [self.STEER, self.FAN_ANG]
