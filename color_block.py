@@ -16,7 +16,7 @@ controller = PID_controller([1000, 16, 45])
 ctrl_last = 0
 ctrl = 0
 no_flip = 0 
-
+dist = 100000
 
 if ON_RPI:
     from ARSCHLOCH import *
@@ -24,9 +24,9 @@ if ON_RPI:
     arschloch.turn_on()
     arschloch.callibrate_ESC()
     atexit.register(arschloch.turn_off)
-    arschloch.accelerate(10)
+    arschloch.accelerate(0)
     time.sleep(0.7)
-    arschloch.accelerate(4)
+    arschloch.accelerate(0)
 
 def evaluate_function(angle_part, translate_part, x, y):
     x = abs(x)
@@ -37,6 +37,7 @@ def evaluate_function(angle_part, translate_part, x, y):
 
 while True:
     resolution = 16
+    dist = arschloch.get_distance()
     _, img = cam.read()
     img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
     img = img[int(0.45*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
@@ -82,7 +83,8 @@ while True:
                 print "Translate Part : " + str(translate_part)
                 print "Angle Part : " + str(angle_part)
                 print "flip no : " + str(no_flip)
-                print "ctrl = " + str(ctrl)
+                print "ctrl : " + str(ctrl)
+                print "dist : " + str(dist)
 
         if not ON_RPI:
             for i in range(len(path) - 1):
