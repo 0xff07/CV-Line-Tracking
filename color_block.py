@@ -11,6 +11,8 @@ ON_RPI = 1
 CAMERA_NO = 0
 IMG_WIDTH = 320
 IMG_HEIGHT = 240
+NORMAL_SPEED = 2
+THRUST_SPEED = 7
 cam = cv2.VideoCapture(CAMERA_NO)
 controller = PID_controller([1000, 16, 45])
 ctrl_last = 0
@@ -40,7 +42,7 @@ while True:
     dist = arschloch.get_distance()
     _, img = cam.read()
     img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-    img = img[int(0.45*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
+    img = img[int(0*IMG_HEIGHT):IMG_HEIGHT, int(0 * IMG_WIDTH):int(1 * IMG_WIDTH)]
     img = CLACHE_equalization(img)
     path, poly = extract_polygon(img, resolution)
 
@@ -52,7 +54,9 @@ while True:
 
         if AREA / 80.0 < area or area < 1:
             ctrl = ctrl_last
-            print "Noise Detected ! ! !"
+            if __debug__:
+                print("Noise Detected ! ! !")
+                cv2.drawContours(img,[hull],0,(0,0,255),-1)            
         else:
             curve_cm = [0, 0]
             for i in range(0, len(path)):
@@ -62,7 +66,7 @@ while True:
             vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
             ang_sec = 90 - np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
 
-            translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
+            translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [135, 45])
             angle_part = ang_sec
 
             ctrl_estimate = evaluate_function(angle_part, translate_part, \
@@ -80,18 +84,18 @@ while True:
             ctrl_last = ctrl
 
             if __debug__:
-                print "Translate Part : " + str(translate_part)
-                print "Angle Part : " + str(angle_part)
-                print "flip no : " + str(no_flip)
-                print "ctrl : " + str(ctrl)
-                print "dist : " + str(dist)
+                print("Translate Part : " + str(translate_part))
+                print("Angle Part : " + str(angle_part))
+                print("flip no : " + str(no_flip))
+                print("ctrl : " + str(ctrl))
+                print("dist : " + str(dist))
 
-        if not ON_RPI:
+        if __debug__:
             for i in range(len(path) - 1):
                 cv2.line(img, path[i] ,path[i + 1],(0, 255, 0),5)
             for i in range(len(poly) - 1):
                 cv2.drawContours(img,poly[i],0,(255,0,0),1)            
-            cv2.drawContours(img,[hull],0,(255,0,0),-1)            
+            cv2.drawContours(img,[hull],0,(255,0,0),-1)
             cv2.imshow("cam",img)
             cv2.waitKey(10)
 

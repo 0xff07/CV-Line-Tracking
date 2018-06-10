@@ -1,4 +1,4 @@
-import Queue
+import queue as Queue
 
 class PID_controller():
     def __init__(self, KPID, QUEUE_SIZE = 2000):
@@ -36,5 +36,5 @@ class PID_controller():
         return self.ctrl
 
     def dump(self):
-        print "PID : " + str(self.PID)
-        print "CONTROL : " + str(self.ctrl)
+        print("PID : " + str(self.PID))
+        print("CONTROL : " + str(self.ctrl))

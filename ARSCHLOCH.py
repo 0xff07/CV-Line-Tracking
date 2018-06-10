@@ -38,19 +38,19 @@ class ARSCHLOCH:
             self.pi.set_PWM_frequency(i, 50)
 
     def turn_off(self):
-        print "exit routing start..."
-        print "Halt BLDC..."
+        print("exit routing start...")
+        print("Halt BLDC...")
         for i in self.ESC_PIN:
             self.pi.set_PWM_dutycycle(i, 0)
-        print "Halt Servos..."
+        print("Halt Servos...")
         for i in self.SERVO_PIN:
             self.pi.set_PWM_dutycycle(i, self.S_MID)
         time.sleep(1)
         for i in self.SERVO_PIN:
             self.pi.set_PWM_dutycycle(i, 0)
-        print "Stop sonar ranger ..."
+        print("Stop sonar ranger ...")
         self.ranger.cancel()
-        print "Clean Sensor pins..."
+        print("Clean Sensor pins...")
         for i in self.SENSOR_PIN_IN:
             self.pi.set_PWM_dutycycle(i, 0)
         self.pi.stop()
@@ -83,14 +83,14 @@ class ARSCHLOCH:
             time.sleep(1)
 
     def callibrate_ESC(self):
-        print "calibration high ..."
+        print("calibration high ...")
         self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MAXDUTY)
         time.sleep(2)
-        print "calibration low ..."
+        print("calibration low ...")
         self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MINDUTY)
         time.sleep(2)
         self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MINDUTY)
-        print "Finish calibration !"
+        print("Finish calibration !")
 
 if __name__ == "__main__":
     import atexit
