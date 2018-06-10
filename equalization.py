@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def CLACHE_equalization(img):
+def CLAHE_equalization(img):
     lab= cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))

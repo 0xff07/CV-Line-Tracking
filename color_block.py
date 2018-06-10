@@ -43,7 +43,6 @@ while True:
     _, img = cam.read()
     img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
     img = img[int(0*IMG_HEIGHT):IMG_HEIGHT, int(0 * IMG_WIDTH):int(1 * IMG_WIDTH)]
-    img = CLACHE_equalization(img)
     path, poly = extract_polygon(img, resolution)
 
     if not len(path) == 0:
