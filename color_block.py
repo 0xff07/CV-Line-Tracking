@@ -11,10 +11,10 @@ ON_RPI = 1
 CAMERA_NO = 0
 IMG_WIDTH = 320
 IMG_HEIGHT = 240
-NORMAL_SPEED = 2
+NORMAL_SPEED = 4
 THRUST_SPEED = 7
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 16, 45])
+controller = PID_controller([1000, 16, 0])
 ctrl_last = 0
 ctrl = 0
 no_flip = 0 
@@ -24,25 +24,26 @@ if ON_RPI:
     from ARSCHLOCH import *
     arschloch = ARSCHLOCH()
     arschloch.turn_on()
+    arschloch.set_fan(175)
     arschloch.callibrate_ESC()
     atexit.register(arschloch.turn_off)
-    arschloch.accelerate(0)
+    arschloch.accelerate(THRUST_SPEED)
     time.sleep(0.7)
-    arschloch.accelerate(0)
+    arschloch.accelerate(NORMAL_SPEED)
 
 def evaluate_function(angle_part, translate_part, x, y):
     x = abs(x)
-    return math.exp(-1*y/IMG_HEIGHT/20.)*(
+    return math.exp(-0*y/IMG_HEIGHT/20.)*(
         (1 - 1.*x/IMG_WIDTH/2.0)*angle_part + 
-         1.*x/IMG_WIDTH * translate_part)
+         1.*x/IMG_WIDTH/2.0 * translate_part)
 
 
 while True:
-    resolution = 16
-    dist = arschloch.get_distance()
+    resolution = 12
+    #dist = arschloch.get_distance()
     _, img = cam.read()
     img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-    img = img[int(0*IMG_HEIGHT):IMG_HEIGHT, int(0 * IMG_WIDTH):int(1 * IMG_WIDTH)]
+    img = img[int(0.7*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
     path, poly = extract_polygon(img, resolution)
 
     if not len(path) == 0:
@@ -51,11 +52,11 @@ while True:
         area = cv2.contourArea(hull)
         AREA = IMG_HEIGHT * IMG_WIDTH
 
-        if AREA / 80.0 < area or area < 1:
+        if AREA / 45.0 < area:
             ctrl = ctrl_last
             if __debug__:
                 print("Noise Detected ! ! !")
-                cv2.drawContours(img,[hull],0,(0,0,255),-1)            
+                cv2.drawContours(img,[hull],0,(160,0,0),5)            
         else:
             curve_cm = [0, 0]
             for i in range(0, len(path)):
@@ -65,7 +66,7 @@ while True:
             vec_sec = [path[0][0]-path[n-1][0], path[0][1]-path[n-1][1]]
             ang_sec = 90 - np.angle(vec_sec[0] - vec_sec[1] * 1J, deg=True)
 
-            translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [135, 45])
+            translate_part = 90 - np.interp(curve_cm[0], [0, IMG_WIDTH], [180, 0])
             angle_part = ang_sec
 
             ctrl_estimate = evaluate_function(angle_part, translate_part, \
@@ -87,7 +88,7 @@ while True:
                 print("Angle Part : " + str(angle_part))
                 print("flip no : " + str(no_flip))
                 print("ctrl : " + str(ctrl))
-                print("dist : " + str(dist))
+                #print("dist : " + str(dist))
 
         if __debug__:
             for i in range(len(path) - 1):

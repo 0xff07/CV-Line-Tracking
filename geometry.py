@@ -13,7 +13,7 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
     
     for i in range(0, slice_num) :
         sliced_img = img[X_DIV*i + 1:X_DIV*(i+1), int(0):int(IMG_WIDTH)]
-        blur = cv2.GaussianBlur(sliced_img,(41,41),0)
+        blur = cv2.GaussianBlur(sliced_img,(5,5),0)
         imgHSV = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(imgHSV, LB, UB)
         maskOpen = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernelOpen)

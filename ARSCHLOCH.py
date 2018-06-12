@@ -10,8 +10,8 @@ class ARSCHLOCH:
         self.ESC = 6
         self.SONAR_ECHO = 17
         self.SONAR_TRIG = 27
-        self.S_MID = 17
-        self.S_AMP = 5
+        self.S_MID = 16
+        self.S_AMP = 10
         self.MAX_DUTY = self.S_MID + self.S_AMP
         self.MIN_DUTY = self.S_MID - self.S_AMP
         self.ESC_MINDUTY = 10
@@ -54,6 +54,17 @@ class ARSCHLOCH:
         for i in self.SENSOR_PIN_IN:
             self.pi.set_PWM_dutycycle(i, 0)
         self.pi.stop()
+
+    def angle_to_duty(self, theta):
+        if theta > 180:
+            theta = 180
+        elif theta < 0:
+            theta = 0
+        return 1.*self.MAX_DUTY + 1.*theta / 180. * (1.*self.MIN_DUTY - 1.*self.MAX_DUTY)
+
+    def set_fan(self, theta):
+        duty = self.angle_to_duty(theta)
+        self.pi.set_PWM_dutycycle(self.FAN_ANG, duty)
 
     def accelerate(self, speed = 1):
         if speed < 0:
@@ -102,6 +113,7 @@ if __name__ == "__main__":
         #arschloch.callibrate_ESC()
         #arschloch.accelerate(4)
         #arschloch.turn_off()
+        arschloch.set_fan(172)
         while(1):
             res = arschloch.get_distance()
             print(res)
