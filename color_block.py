@@ -7,10 +7,10 @@ from pid import *
 from geometry import *
 from equalization import *
 
-ON_RPI = 1
+ON_RPI = 0
 CAMERA_NO = 0
-IMG_WIDTH = 320
-IMG_HEIGHT = 240
+IMG_WIDTH = 640
+IMG_HEIGHT = 480
 NORMAL_SPEED = 4
 THRUST_SPEED = 7
 cam = cv2.VideoCapture(CAMERA_NO)
@@ -39,11 +39,11 @@ def evaluate_function(angle_part, translate_part, x, y):
 
 
 while True:
-    resolution = 12
+    resolution = 16
     #dist = arschloch.get_distance()
     _, img = cam.read()
     img = cv2.resize(img,(IMG_WIDTH,IMG_HEIGHT))
-    img = img[int(0.7*IMG_HEIGHT):IMG_HEIGHT, int(0.1 * IMG_WIDTH):int(0.9 * IMG_WIDTH)]
+    img = img[int(0.7*IMG_HEIGHT):IMG_HEIGHT, int(0 * IMG_WIDTH):int(1 * IMG_WIDTH)]
     path, poly = extract_polygon(img, resolution)
 
     if not len(path) == 0:
@@ -51,12 +51,12 @@ while True:
         hull = cv2.convexHull(np.array(path))
         area = cv2.contourArea(hull)
         AREA = IMG_HEIGHT * IMG_WIDTH
-
-        if AREA / 45.0 < area:
+        print(area/1./AREA)
+        if AREA / 80 < area:
             ctrl = ctrl_last
             if __debug__:
                 print("Noise Detected ! ! !")
-                cv2.drawContours(img,[hull],0,(160,0,0),5)            
+                cv2.drawContours(img,[hull],0,(0,0,255),-1)            
         else:
             curve_cm = [0, 0]
             for i in range(0, len(path)):
@@ -89,13 +89,13 @@ while True:
                 print("flip no : " + str(no_flip))
                 print("ctrl : " + str(ctrl))
                 #print("dist : " + str(dist))
+                cv2.drawContours(img,[hull],0,(255,0,0),-1)
 
         if __debug__:
             for i in range(len(path) - 1):
                 cv2.line(img, path[i] ,path[i + 1],(0, 255, 0),5)
             for i in range(len(poly) - 1):
                 cv2.drawContours(img,poly[i],0,(255,0,0),1)            
-            cv2.drawContours(img,[hull],0,(255,0,0),-1)
             cv2.imshow("cam",img)
             cv2.waitKey(10)
 

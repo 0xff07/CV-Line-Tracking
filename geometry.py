@@ -29,8 +29,8 @@ def extract_polygon(img, slice_num=16, LB=np.array([0,0,0]), UB=np.array([180,25
             poly_points[i] = (int(M['m10']/M['m00']), int(M['m01']/M['m00']) + X_DIV * i)
             detected_contours[i] = c
 
-        contours = [i for i in detected_contours if i is not None]
-        points = [i for i in poly_points if i is not None]
+    contours = [i for i in detected_contours if i is not None]
+    points = [i for i in poly_points if i is not None]
 
     return points, contours
 
