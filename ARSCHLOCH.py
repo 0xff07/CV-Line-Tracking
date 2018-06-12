@@ -114,12 +114,12 @@ if __name__ == "__main__":
         #arschloch.accelerate(4)
         #arschloch.turn_off()
         arschloch.set_fan(172)
-        while(1):
-            res = arschloch.get_distance()
-            print(res)
-        #time.sleep(5)
-        #while 1:
-            #for i in arschloch.SERVO_PIN:
-                #arschloch.test_servo()
+        #while(1):
+            #res = arschloch.get_distance()
+            #print(res)
+        time.sleep(5)
+        while 1:
+            for i in arschloch.SERVO_PIN:
+                arschloch.test_servo()
     except:
         exit()

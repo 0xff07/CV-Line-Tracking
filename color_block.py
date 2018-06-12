@@ -7,14 +7,14 @@ from pid import *
 from geometry import *
 from equalization import *
 
-ON_RPI = 0
-CAMERA_NO = 0
+ON_RPI = 1
+CAMERA_NO = -1
 IMG_WIDTH = 640
 IMG_HEIGHT = 480
-NORMAL_SPEED = 4
+NORMAL_SPEED = 3
 THRUST_SPEED = 7
 cam = cv2.VideoCapture(CAMERA_NO)
-controller = PID_controller([1000, 16, 0])
+controller = PID_controller([1000, 16, 200])
 ctrl_last = 0
 ctrl = 0
 no_flip = 0 
@@ -24,7 +24,7 @@ if ON_RPI:
     from ARSCHLOCH import *
     arschloch = ARSCHLOCH()
     arschloch.turn_on()
-    arschloch.set_fan(175)
+    arschloch.set_fan(170)
     arschloch.callibrate_ESC()
     atexit.register(arschloch.turn_off)
     arschloch.accelerate(THRUST_SPEED)
