@@ -55,16 +55,16 @@ class ARSCHLOCH:
             self.pi.set_PWM_dutycycle(i, 0)
         self.pi.stop()
 
-    def angle_to_duty(self, theta):
-        if theta > 180:
-            theta = 180
-        elif theta < 0:
-            theta = 0
-        return 1.*self.MAX_DUTY + 1.*theta / 180. * (1.*self.MIN_DUTY - 1.*self.MAX_DUTY)
 
     def set_fan(self, theta):
-        duty = self.angle_to_duty(theta)
-        self.pi.set_PWM_dutycycle(self.FAN_ANG, duty)
+        if theta < 0:
+            theta = 0
+        elif theta > 180:
+            theta = 180
+        duty = 1.*self.MAX_DUTY + 1.*theta / 180. * (1.*self.MIN_DUTY - 1.*self.MAX_DUTY)
+        self.pi.set_PWM_dutycycle(self.FAN_ANG, int(duty))
+
+
 
     def accelerate(self, speed = 1):
         if speed < 0:
@@ -96,7 +96,7 @@ class ARSCHLOCH:
     def callibrate_ESC(self):
         print("calibration high ...")
         self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MAXDUTY)
-        time.sleep(2)
+        time.sleep(4)
         print("calibration low ...")
         self.pi.set_PWM_dutycycle(self.ESC, self.ESC_MINDUTY)
         time.sleep(2)

@@ -14,16 +14,23 @@ if __name__ == "__main__":
     atexit.register(arschloch.turn_off)
     gamepad = InputDevice('/dev/input/event0')
     print(gamepad)
+    arschloch.accelerate(int(thrust))
+    arschloch.set_fan(int(brake))
+    arschloch.steer(int(steer))
 
     for event in gamepad.read_loop():
+        if event.code == 315 and event.value == 1:
+            print("Calibrate ESC")
+            print(event.value)
+            arschloch.callibrate_ESC()
         if event.code == 5:
             #print("THRUST")
             #print(event.value)
-            thrust = 1 + event.value / 44
+            thrust = event.value / 15
         elif event.code == 2:
             #print("BRAKE")
             #print(event.value)
-            brake = np.interp(event.value, [0, 255], [170, 10])
+            brake = np.interp(event.value, [255, 0], [10, 170])
         elif event.code == 0 and not event.value == 0:
             #print("STEER")
             #print(event.value)
@@ -33,4 +40,5 @@ if __name__ == "__main__":
         arschloch.accelerate(int(thrust))
         arschloch.set_fan(int(brake))
         arschloch.steer(int(steer))
+        #time.sleep(0.05)
 
