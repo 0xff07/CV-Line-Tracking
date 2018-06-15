@@ -23,7 +23,7 @@ if __name__ == "__main__":
             print("Calibrate ESC")
             print(event.value)
             arschloch.callibrate_ESC()
-        if event.code == 5:
+        elif event.code == 5:
             #print("THRUST")
             #print(event.value)
             thrust = event.value / 15
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         elif event.code == 0 and not event.value == 0:
             #print("STEER")
             #print(event.value)
-            if event.value < 3000 and event.value > -3000:
+            if event.value < 32000 and event.value > -32000:
                 steer = 90
             else:
                 steer = np.interp(event.value, [-32767, 32767], [180, 0])
