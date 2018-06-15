@@ -11,7 +11,7 @@ class ARSCHLOCH:
         self.SONAR_ECHO = 17
         self.SONAR_TRIG = 27
         self.S_MID = 16
-        self.S_AMP = 10
+        self.S_AMP = 11
         self.MAX_DUTY = self.S_MID + self.S_AMP
         self.MIN_DUTY = self.S_MID - self.S_AMP
         self.ESC_MINDUTY = 10
@@ -61,7 +61,7 @@ class ARSCHLOCH:
             theta = 0
         elif theta > 180:
             theta = 180
-        duty = 1.*self.MAX_DUTY + 1.*theta / 180. * (1.*self.MIN_DUTY - 1.*self.MAX_DUTY)
+        duty = np.interp(theta, [0, 180], [self.MAX_DUTY, self.MIN_DUTY]) 
         self.pi.set_PWM_dutycycle(self.FAN_ANG, int(duty))
 
 
@@ -80,8 +80,8 @@ class ARSCHLOCH:
             theta = 0
         elif theta > 180:
             theta = 180
-        theta = int(np.interp(theta, [0, 180], [35, 145]))
-        duty = 1.*self.MAX_DUTY + 1.*theta / 180. * (1.*self.MIN_DUTY - 1.*self.MAX_DUTY)
+        theta = (np.interp(theta, [0, 180], [35, 145]))
+        duty = np.interp(theta, [0, 180], [self.MAX_DUTY, self.MIN_DUTY])
         self.pi.set_PWM_dutycycle(self.STEER, int(duty))
 
     def get_distance(self):
@@ -113,11 +113,11 @@ if __name__ == "__main__":
         #arschloch.callibrate_ESC()
         #arschloch.accelerate(4)
         #arschloch.turn_off()
-        arschloch.set_fan(172)
+        #arschloch.set_fan(172)
         #while(1):
             #res = arschloch.get_distance()
             #print(res)
-        time.sleep(5)
+        #time.sleep(5)
         while 1:
             for i in arschloch.SERVO_PIN:
                 arschloch.test_servo()

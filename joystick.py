@@ -3,7 +3,7 @@ import atexit
 from evdev import InputDevice, categorize, ecodes
 
 thrust = 0
-brake = 170
+brake = 0
 steer = 90
 
 if __name__ == "__main__":
@@ -30,11 +30,14 @@ if __name__ == "__main__":
         elif event.code == 2:
             #print("BRAKE")
             #print(event.value)
-            brake = np.interp(event.value, [255, 0], [10, 170])
+            brake = np.interp(event.value, [0, 255], [0, 180])
         elif event.code == 0 and not event.value == 0:
             #print("STEER")
             #print(event.value)
-            steer = np.interp(event.value, [-32767, 32767], [180, 0])
+            if event.value < 3000 and event.value > -3000:
+                steer = 90
+            else:
+                steer = np.interp(event.value, [-32767, 32767], [180, 0])
  
         print([thrust, brake, steer])
         arschloch.accelerate(int(thrust))
